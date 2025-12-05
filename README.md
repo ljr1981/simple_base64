@@ -4,7 +4,7 @@
 
 # simple_base64
 
-**[Documentation](https://ljr1981.github.io/simple_base64/)**
+**[Documentation](https://ljr1981.github.io/simple_base64/)** | **[Watch the Build Video](https://youtu.be/zZmpyOlztK8)**
 
 Lightweight Base64 encoding and decoding library for Eiffel.
 
