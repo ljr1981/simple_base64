@@ -1,0 +1,13 @@
+# EiffelStudio generated files
+EIFGENs/
+
+# Backup files
+*.bak
+*~
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# macOS
+.DS_Store
