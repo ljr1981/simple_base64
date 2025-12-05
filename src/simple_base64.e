@@ -22,6 +22,9 @@ note
 	author: "Larry Rix"
 	date: "$Date$"
 	revision: "$Revision$"
+	EIS: "name=Documentation", "src=../docs/index.html", "protocol=URI", "tag=documentation"
+	EIS: "name=API Reference", "src=../docs/api/simple_base64.html", "protocol=URI", "tag=api"
+	EIS: "name=RFC 4648", "src=https://datatracker.ietf.org/doc/html/rfc4648", "protocol=URI", "tag=specification"
 
 class
 	SIMPLE_BASE64

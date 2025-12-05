@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMPLE_BASE64 API Reference</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" type="image/png" href="../images/logo.png">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="../images/logo.png" alt="simple_* logo" class="logo">
+        </div>
+        <h1>SIMPLE_BASE64</h1>
+        <p class="tagline">API Reference</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="#encoding">Encoding</a></li>
+            <li><a href="#decoding">Decoding</a></li>
+            <li><a href="#validation">Validation</a></li>
+            <li><a href="#conversion">Conversion</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section>
+            <h2>Class Overview</h2>
+            <p>
+                <code>SIMPLE_BASE64</code> provides RFC 4648 compliant Base64 encoding and decoding
+                for Eiffel applications. It supports both standard Base64 and URL-safe Base64URL variants.
+            </p>
+
+            <div class="api-section">
+                <h3>Creation</h3>
+                <div class="signature">create encoder.make</div>
+                <p>Initialize the encoder. No parameters required.</p>
+            </div>
+        </section>
+
+        <section id="encoding">
+            <h2>Encoding Features</h2>
+
+            <div class="api-section">
+                <h3>encode (a_input: STRING): STRING</h3>
+                <div class="signature">encoded := encoder.encode ("Hello, World!")</div>
+                <p>Encode a string to standard Base64 with padding.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_input /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                    <div class="ensure">ensure: valid_base64: is_valid_base64 (Result)</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>encode_bytes (a_bytes: ARRAY [NATURAL_8]): STRING</h3>
+                <div class="signature">encoded := encoder.encode_bytes (byte_array)</div>
+                <p>Encode a byte array to standard Base64. Useful for binary data.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: bytes_not_void: a_bytes /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                    <div class="ensure">ensure: correct_length: Result.count = ((a_bytes.count + 2) // 3 * 4)</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>encode_url (a_input: STRING): STRING</h3>
+                <div class="signature">url_safe := encoder.encode_url ("data+with/special")</div>
+                <p>Encode to URL-safe Base64URL without padding. Uses <code>-</code> and <code>_</code> instead of <code>+</code> and <code>/</code>.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_input /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                    <div class="ensure">ensure: no_padding: not Result.has ('=')</div>
+                    <div class="ensure">ensure: url_safe: not Result.has ('+') and not Result.has ('/')</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>encode_url_with_padding (a_input: STRING): STRING</h3>
+                <div class="signature">url_safe := encoder.encode_url_with_padding ("data")</div>
+                <p>Encode to URL-safe Base64URL with padding preserved.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_input /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                    <div class="ensure">ensure: url_safe: not Result.has ('+') and not Result.has ('/')</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="decoding">
+            <h2>Decoding Features</h2>
+
+            <div class="api-section">
+                <h3>decode (a_input: STRING): STRING</h3>
+                <div class="signature">decoded := encoder.decode ("SGVsbG8sIFdvcmxkIQ==")</div>
+                <p>Decode a Base64 or Base64URL string back to the original string.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_input /= Void</div>
+                    <div class="require">require: valid_input: is_valid_base64 (a_input) or is_valid_base64_url (a_input)</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>decode_bytes (a_input: STRING): ARRAY [NATURAL_8]</h3>
+                <div class="signature">bytes := encoder.decode_bytes (encoded_string)</div>
+                <p>Decode Base64 to a byte array. Automatically handles both standard and URL-safe formats.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_input /= Void</div>
+                    <div class="require">require: valid_or_normalizable: is_valid_base64 (a_input) or is_valid_base64_url (a_input) or a_input.is_empty</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>decode_url (a_input: STRING): STRING</h3>
+                <div class="signature">decoded := encoder.decode_url (url_safe_string)</div>
+                <p>Decode a URL-safe Base64URL string. Alias for <code>decode</code> with clearer intent.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_input /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="validation">
+            <h2>Validation Features</h2>
+
+            <div class="api-section">
+                <h3>is_valid_base64 (a_string: STRING): BOOLEAN</h3>
+                <div class="signature">if encoder.is_valid_base64 (input) then ...</div>
+                <p>Check if a string is valid standard Base64 (with proper length and characters).</p>
+                <p>Format: Length must be a multiple of 4. Characters must be A-Z, a-z, 0-9, +, /, or = (padding).</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: string_not_void: a_string /= Void</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>is_valid_base64_url (a_string: STRING): BOOLEAN</h3>
+                <div class="signature">if encoder.is_valid_base64_url (input) then ...</div>
+                <p>Check if a string is valid URL-safe Base64URL.</p>
+                <p>Characters must be A-Z, a-z, 0-9, -, _, or = (padding). Length does not need to be a multiple of 4.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: string_not_void: a_string /= Void</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="conversion">
+            <h2>Conversion Features</h2>
+
+            <div class="api-section">
+                <h3>to_url_safe (a_base64: STRING): STRING</h3>
+                <div class="signature">url_safe := encoder.to_url_safe (standard_base64)</div>
+                <p>Convert standard Base64 to URL-safe format. Replaces <code>+</code> with <code>-</code> and <code>/</code> with <code>_</code>.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_base64 /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                    <div class="ensure">ensure: no_plus: not Result.has ('+')</div>
+                    <div class="ensure">ensure: no_slash: not Result.has ('/')</div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h3>to_standard (a_base64url: STRING): STRING</h3>
+                <div class="signature">standard := encoder.to_standard (url_safe_base64)</div>
+                <p>Convert URL-safe Base64URL to standard format. Replaces <code>-</code> with <code>+</code> and <code>_</code> with <code>/</code>.</p>
+                <div class="contracts">
+                    <h4>Contracts</h4>
+                    <div class="require">require: input_not_void: a_base64url /= Void</div>
+                    <div class="ensure">ensure: result_not_void: Result /= Void</div>
+                    <div class="ensure">ensure: no_dash: not Result.has ('-')</div>
+                    <div class="ensure">ensure: no_underscore: not Result.has ('_')</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="constants">
+            <h2>Constants</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Constant</th>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Standard_alphabet</code></td>
+                        <td><code>ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/</code></td>
+                        <td>Standard Base64 alphabet (RFC 4648)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Url_safe_alphabet</code></td>
+                        <td><code>ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_</code></td>
+                        <td>URL-safe Base64URL alphabet (RFC 4648)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Padding_char</code></td>
+                        <td><code>=</code></td>
+                        <td>Padding character</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="invariants">
+            <h2>Class Invariants</h2>
+            <div class="contracts">
+                <div class="ensure">invariant: standard_alphabet_64: Standard_alphabet.count = 64</div>
+                <div class="ensure">invariant: url_safe_alphabet_64: Url_safe_alphabet.count = 64</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            <a href="../index.html">&larr; Back to simple_base64</a>
+        </p>
+        <p class="copyright">
+            Copyright &copy; 2024-2025 Larry Rix. MIT License.
+        </p>
+    </footer>
+</body>
+</html>
