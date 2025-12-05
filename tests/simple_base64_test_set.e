@@ -15,6 +15,8 @@ feature -- Test: Encoding
 
 	test_encode_empty
 			-- Test encoding empty string.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -24,6 +26,8 @@ feature -- Test: Encoding
 
 	test_encode_single_char
 			-- Test encoding single character.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -36,6 +40,8 @@ feature -- Test: Encoding
 
 	test_encode_two_chars
 			-- Test encoding two characters.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -46,6 +52,8 @@ feature -- Test: Encoding
 
 	test_encode_three_chars
 			-- Test encoding three characters (no padding).
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -56,6 +64,8 @@ feature -- Test: Encoding
 
 	test_encode_hello_world
 			-- Test encoding "Hello, World!".
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -65,6 +75,8 @@ feature -- Test: Encoding
 
 	test_encode_standard_test_vectors
 			-- Test RFC 4648 test vectors.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -81,6 +93,8 @@ feature -- Test: Decoding
 
 	test_decode_empty
 			-- Test decoding empty string.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -90,6 +104,8 @@ feature -- Test: Decoding
 
 	test_decode_single_char
 			-- Test decoding single character encoding.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -99,6 +115,8 @@ feature -- Test: Decoding
 
 	test_decode_two_chars
 			-- Test decoding two character encoding.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -108,6 +126,8 @@ feature -- Test: Decoding
 
 	test_decode_three_chars
 			-- Test decoding three character encoding.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -117,6 +137,8 @@ feature -- Test: Decoding
 
 	test_decode_hello_world
 			-- Test decoding "Hello, World!".
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -126,6 +148,8 @@ feature -- Test: Decoding
 
 	test_decode_standard_test_vectors
 			-- Test RFC 4648 test vectors.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -142,6 +166,8 @@ feature -- Test: Round-trip
 
 	test_roundtrip_ascii
 			-- Test encoding then decoding returns original.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode", "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 			original, encoded, decoded: STRING
@@ -155,6 +181,8 @@ feature -- Test: Round-trip
 
 	test_roundtrip_binary
 			-- Test round-trip with binary-ish data.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode", "covers/{SIMPLE_BASE64}.decode"
 		local
 			encoder: SIMPLE_BASE64
 			original, decoded: STRING
@@ -169,6 +197,8 @@ feature -- Test: URL-Safe
 
 	test_encode_url_no_padding
 			-- Test URL-safe encoding removes padding.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode_url"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -179,6 +209,8 @@ feature -- Test: URL-Safe
 
 	test_encode_url_replaces_plus
 			-- Test URL-safe encoding replaces + with -.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode_url"
 		local
 			encoder: SIMPLE_BASE64
 			encoded: STRING
@@ -193,6 +225,8 @@ feature -- Test: URL-Safe
 
 	test_encode_url_replaces_slash
 			-- Test URL-safe encoding replaces / with _.
+		note
+			testing: "covers/{SIMPLE_BASE64}.encode_url"
 		local
 			encoder: SIMPLE_BASE64
 			encoded: STRING
@@ -204,6 +238,8 @@ feature -- Test: URL-Safe
 
 	test_decode_url_safe
 			-- Test decoding URL-safe input.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode_url"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -214,6 +250,8 @@ feature -- Test: URL-Safe
 
 	test_decode_url_safe_no_padding
 			-- Test decoding URL-safe input without padding.
+		note
+			testing: "covers/{SIMPLE_BASE64}.decode_url"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -226,6 +264,8 @@ feature -- Test: Validation
 
 	test_is_valid_base64_empty
 			-- Test empty string is valid.
+		note
+			testing: "covers/{SIMPLE_BASE64}.is_valid_base64"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -235,6 +275,8 @@ feature -- Test: Validation
 
 	test_is_valid_base64_correct
 			-- Test correct base64 is valid.
+		note
+			testing: "covers/{SIMPLE_BASE64}.is_valid_base64"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -244,6 +286,8 @@ feature -- Test: Validation
 
 	test_is_valid_base64_wrong_length
 			-- Test wrong length is invalid.
+		note
+			testing: "covers/{SIMPLE_BASE64}.is_valid_base64"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -253,6 +297,8 @@ feature -- Test: Validation
 
 	test_is_valid_base64_invalid_char
 			-- Test invalid character is invalid.
+		note
+			testing: "covers/{SIMPLE_BASE64}.is_valid_base64"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -264,6 +310,8 @@ feature -- Test: Conversion
 
 	test_to_url_safe
 			-- Test standard to URL-safe conversion.
+		note
+			testing: "covers/{SIMPLE_BASE64}.to_url_safe"
 		local
 			encoder: SIMPLE_BASE64
 		do
@@ -273,6 +321,8 @@ feature -- Test: Conversion
 
 	test_to_standard
 			-- Test URL-safe to standard conversion.
+		note
+			testing: "covers/{SIMPLE_BASE64}.to_standard"
 		local
 			encoder: SIMPLE_BASE64
 		do
