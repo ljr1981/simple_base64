@@ -77,6 +77,26 @@ url_safe := encoder.encode_url (<span class="string">"data with special chars"</
 
 <span class="comment">-- Decode URL-safe</span>
 decoded := encoder.decode_url (url_safe)</code></pre>
+
+            <h3>MIME Encoding (RFC 2045)</h3>
+<pre><code><span class="comment">-- MIME encoding with line wrapping at 76 characters</span>
+mime_encoded := encoder.encode_mime (long_content)
+
+<span class="comment">-- Lenient decode handles whitespace and line breaks</span>
+decoded := encoder.decode_lenient (mime_encoded)</code></pre>
+
+            <h3>Data URIs (RFC 2397)</h3>
+<pre><code><span class="comment">-- Create a data URI</span>
+uri := encoder.to_data_uri (<span class="string">"Hello!"</span>, <span class="string">"text/plain"</span>)
+<span class="comment">-- Result: "data:text/plain;base64,SGVsbG8h"</span>
+
+<span class="comment">-- Extract data from a data URI</span>
+data := encoder.from_data_uri (uri)
+<span class="comment">-- Result: "Hello!"</span>
+
+<span class="comment">-- Extract the mediatype</span>
+mediatype := encoder.data_uri_mediatype (uri)
+<span class="comment">-- Result: "text/plain"</span></code></pre>
         </section>
 
         <section id="features">
@@ -106,6 +126,14 @@ decoded := encoder.decode_url (url_safe)</code></pre>
                 <div class="feature-card">
                     <h4>Format Conversion</h4>
                     <p>Convert between standard and URL-safe formats with <code>to_url_safe</code> and <code>to_standard</code>.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>MIME Encoding</h4>
+                    <p>RFC 2045 compliant encoding with line wrapping at 76 characters. Lenient decoder handles whitespace.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Data URI Support</h4>
+                    <p>RFC 2397 data URIs for embedding data inline. Create, parse, and extract mediatypes.</p>
                 </div>
             </div>
         </section>
@@ -157,6 +185,30 @@ decoded := encoder.decode_url (url_safe)</code></pre>
                         <td><code>to_standard (a_base64url)</code></td>
                         <td>Convert URL-safe to standard format</td>
                     </tr>
+                    <tr>
+                        <td><code>encode_mime (a_input)</code></td>
+                        <td>Encode with MIME line wrapping (76 chars)</td>
+                    </tr>
+                    <tr>
+                        <td><code>decode_lenient (a_input)</code></td>
+                        <td>Decode ignoring whitespace/line breaks</td>
+                    </tr>
+                    <tr>
+                        <td><code>to_data_uri (a_data, a_mediatype)</code></td>
+                        <td>Create data URI from content</td>
+                    </tr>
+                    <tr>
+                        <td><code>from_data_uri (a_uri)</code></td>
+                        <td>Extract and decode data from data URI</td>
+                    </tr>
+                    <tr>
+                        <td><code>data_uri_mediatype (a_uri)</code></td>
+                        <td>Extract mediatype from data URI</td>
+                    </tr>
+                    <tr>
+                        <td><code>is_data_uri (a_input)</code></td>
+                        <td>Check if string is a data URI</td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -166,7 +218,7 @@ decoded := encoder.decode_url (url_safe)</code></pre>
         <section id="testing">
             <h2>Testing</h2>
             <p>
-                The library includes a comprehensive test suite with <strong>25 tests</strong> covering:
+                The library includes a comprehensive test suite with <strong>44 tests</strong> covering:
             </p>
             <ul>
                 <li>Standard RFC 4648 test vectors</li>
@@ -175,6 +227,9 @@ decoded := encoder.decode_url (url_safe)</code></pre>
                 <li>URL-safe encoding/decoding</li>
                 <li>Roundtrip encoding for ASCII and binary data</li>
                 <li>Validation of valid and invalid inputs</li>
+                <li>MIME encoding with line wrapping</li>
+                <li>Lenient decoding with whitespace handling</li>
+                <li>Data URI creation, parsing, and roundtrip</li>
             </ul>
 <pre><code><span class="comment">-- Run tests</span>
 ec.exe -batch -config simple_base64.ecf -target simple_base64_tests -tests</code></pre>

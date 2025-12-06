@@ -127,6 +127,8 @@ feature -- Encoding
 				Result.is_empty or else Result [Result.count] /= '='
 			loop
 				Result.remove_tail (1)
+			variant
+				Result.count
 			end
 		ensure
 			result_not_void: Result /= Void
@@ -144,6 +146,46 @@ feature -- Encoding
 		ensure
 			result_not_void: Result /= Void
 			url_safe: not Result.has ('+') and not Result.has ('/')
+		end
+
+	encode_mime (a_input: STRING): STRING
+			-- Encode `a_input' to Base64 with MIME line wrapping.
+			-- Lines are wrapped at 76 characters per RFC 2045.
+		require
+			input_not_void: a_input /= Void
+		do
+			Result := encode_bytes_mime (string_to_bytes (a_input))
+		ensure
+			result_not_void: Result /= Void
+		end
+
+	encode_bytes_mime (a_bytes: ARRAY [NATURAL_8]): STRING
+			-- Encode `a_bytes' to Base64 with MIME line wrapping.
+			-- Lines are wrapped at 76 characters per RFC 2045.
+		require
+			bytes_not_void: a_bytes /= Void
+		local
+			l_raw: STRING
+			i: INTEGER
+		do
+			l_raw := encode_bytes (a_bytes)
+			create Result.make (l_raw.count + (l_raw.count // Mime_line_length) * 2)
+
+			from
+				i := 1
+			until
+				i > l_raw.count
+			loop
+				if i > 1 and then (i - 1) \\ Mime_line_length = 0 then
+					Result.append ("%R%N")
+				end
+				Result.append_character (l_raw [i])
+				i := i + 1
+			variant
+				l_raw.count - i + 1
+			end
+		ensure
+			result_not_void: Result /= Void
 		end
 
 feature -- Decoding
@@ -238,6 +280,48 @@ feature -- Decoding
 			result_not_void: Result /= Void
 		end
 
+	decode_lenient (a_input: STRING): STRING
+			-- Decode Base64 `a_input', ignoring whitespace and line breaks.
+			-- More tolerant than `decode' - suitable for MIME-encoded content.
+		require
+			input_not_void: a_input /= Void
+		do
+			Result := bytes_to_string (decode_bytes_lenient (a_input))
+		ensure
+			result_not_void: Result /= Void
+		end
+
+	decode_bytes_lenient (a_input: STRING): ARRAY [NATURAL_8]
+			-- Decode Base64 `a_input' to bytes, ignoring whitespace.
+			-- Strips CR, LF, space, and tab before decoding.
+		require
+			input_not_void: a_input /= Void
+		local
+			l_cleaned: STRING
+			i: INTEGER
+			c: CHARACTER
+		do
+			-- Strip all whitespace
+			create l_cleaned.make (a_input.count)
+			from
+				i := 1
+			until
+				i > a_input.count
+			loop
+				c := a_input [i]
+				if c /= ' ' and c /= '%T' and c /= '%R' and c /= '%N' then
+					l_cleaned.append_character (c)
+				end
+				i := i + 1
+			variant
+				a_input.count - i + 1
+			end
+
+			Result := decode_bytes (l_cleaned)
+		ensure
+			result_not_void: Result /= Void
+		end
+
 feature -- Validation
 
 	is_valid_base64 (a_input: STRING): BOOLEAN
@@ -270,6 +354,8 @@ feature -- Validation
 						Result := False
 					end
 					i := i + 1
+				variant
+					a_input.count - i + 1
 				end
 			end
 		end
@@ -296,6 +382,8 @@ feature -- Validation
 						Result := False
 					end
 					i := i + 1
+				variant
+					a_input.count - i + 1
 				end
 			end
 		end
@@ -330,6 +418,135 @@ feature -- Conversion
 			no_underscore: not Result.has ('_')
 		end
 
+feature -- Data URI Support
+
+	to_data_uri (a_data, a_mediatype: STRING): STRING
+			-- Create a data URI from `a_data' with `a_mediatype'.
+			-- Format: data:<mediatype>;base64,<encoded_data>
+			-- Example: data:text/plain;base64,SGVsbG8h
+		require
+			data_not_void: a_data /= Void
+			mediatype_not_void: a_mediatype /= Void
+			mediatype_not_empty: not a_mediatype.is_empty
+		do
+			create Result.make (Data_uri_prefix.count + a_mediatype.count + 10 + ((a_data.count + 2) // 3 * 4))
+			Result.append (Data_uri_prefix)
+			Result.append (a_mediatype)
+			Result.append (";base64,")
+			Result.append (encode (a_data))
+		ensure
+			result_not_void: Result /= Void
+			is_data_uri: is_data_uri (Result)
+		end
+
+	to_data_uri_bytes (a_bytes: ARRAY [NATURAL_8]; a_mediatype: STRING): STRING
+			-- Create a data URI from `a_bytes' with `a_mediatype'.
+		require
+			bytes_not_void: a_bytes /= Void
+			mediatype_not_void: a_mediatype /= Void
+			mediatype_not_empty: not a_mediatype.is_empty
+		do
+			create Result.make (Data_uri_prefix.count + a_mediatype.count + 10 + ((a_bytes.count + 2) // 3 * 4))
+			Result.append (Data_uri_prefix)
+			Result.append (a_mediatype)
+			Result.append (";base64,")
+			Result.append (encode_bytes (a_bytes))
+		ensure
+			result_not_void: Result /= Void
+			is_data_uri: is_data_uri (Result)
+		end
+
+	from_data_uri (a_uri: STRING): STRING
+			-- Extract and decode data from `a_uri'.
+			-- Returns the decoded data or empty string if invalid.
+		require
+			uri_not_void: a_uri /= Void
+		local
+			l_comma_pos: INTEGER
+			l_encoded: STRING
+		do
+			if is_base64_data_uri (a_uri) then
+				l_comma_pos := a_uri.index_of (',', 1)
+				if l_comma_pos > 0 and l_comma_pos < a_uri.count then
+					l_encoded := a_uri.substring (l_comma_pos + 1, a_uri.count)
+					Result := decode (l_encoded)
+				else
+					create Result.make_empty
+				end
+			else
+				create Result.make_empty
+			end
+		ensure
+			result_not_void: Result /= Void
+		end
+
+	from_data_uri_bytes (a_uri: STRING): ARRAY [NATURAL_8]
+			-- Extract and decode bytes from `a_uri'.
+			-- Returns the decoded bytes or empty array if invalid.
+		require
+			uri_not_void: a_uri /= Void
+		local
+			l_comma_pos: INTEGER
+			l_encoded: STRING
+		do
+			if is_base64_data_uri (a_uri) then
+				l_comma_pos := a_uri.index_of (',', 1)
+				if l_comma_pos > 0 and l_comma_pos < a_uri.count then
+					l_encoded := a_uri.substring (l_comma_pos + 1, a_uri.count)
+					Result := decode_bytes (l_encoded)
+				else
+					create Result.make_empty
+				end
+			else
+				create Result.make_empty
+			end
+		ensure
+			result_not_void: Result /= Void
+		end
+
+	data_uri_mediatype (a_uri: STRING): STRING
+			-- Extract the mediatype from `a_uri'.
+			-- Returns empty string if not a valid data URI.
+		require
+			uri_not_void: a_uri /= Void
+		local
+			l_start, l_end: INTEGER
+		do
+			if is_data_uri (a_uri) then
+				l_start := Data_uri_prefix.count + 1
+				-- Find semicolon or comma
+				l_end := a_uri.index_of (';', l_start)
+				if l_end = 0 then
+					l_end := a_uri.index_of (',', l_start)
+				end
+				if l_end > l_start then
+					Result := a_uri.substring (l_start, l_end - 1)
+				else
+					create Result.make_empty
+				end
+			else
+				create Result.make_empty
+			end
+		ensure
+			result_not_void: Result /= Void
+		end
+
+	is_data_uri (a_input: STRING): BOOLEAN
+			-- Is `a_input' a valid data URI?
+		require
+			input_not_void: a_input /= Void
+		do
+			Result := a_input.starts_with (Data_uri_prefix) and a_input.has (',')
+		end
+
+	is_base64_data_uri (a_input: STRING): BOOLEAN
+			-- Is `a_input' a Base64-encoded data URI?
+		require
+			input_not_void: a_input /= Void
+		do
+			Result := is_data_uri (a_input) and a_input.has_substring (";base64,")
+		end
+
 feature {NONE} -- Implementation
 
 	string_to_bytes (a_string: STRING): ARRAY [NATURAL_8]
@@ -348,6 +565,8 @@ feature {NONE} -- Implementation
 			loop
 				l_bytes.extend (a_string [i].code.to_natural_8)
 				i := i + 1
+			variant
+				a_string.count - i + 1
 			end
 			create Result.make_from_array (l_bytes.to_array)
 		ensure
@@ -370,6 +589,8 @@ feature {NONE} -- Implementation
 			loop
 				Result.append_character (a_bytes [i].to_character_8)
 				i := i + 1
+			variant
+				a_bytes.upper - i + 1
 			end
 		ensure
 			result_not_void: Result /= Void
@@ -418,6 +639,8 @@ feature {NONE} -- Implementation
 				loop
 					Result.append_character ('=')
 					l_padding_needed := l_padding_needed - 1
+				variant
+					l_padding_needed
 				end
 			end
 		ensure
@@ -435,6 +658,12 @@ feature -- Constants
 
 	Padding_char: CHARACTER = '='
 			-- Padding character.
+
+	Mime_line_length: INTEGER = 76
+			-- Maximum line length for MIME encoding (RFC 2045).
+
+	Data_uri_prefix: STRING = "data:"
+			-- Data URI scheme prefix (RFC 2397).
 
 invariant
 	standard_alphabet_64: Standard_alphabet.count = 64
